@@ -21,6 +21,7 @@ import {
   DollarSign, Eye, Sunrise, Percent, School, Briefcase, 
   Clock as ClockIcon, CalendarDays // Added CalendarDays, renamed Clock
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 type CareerStat = {
   label: string;
@@ -41,6 +42,8 @@ const CareerDetail = () => {
   const { userData, setSelectedCareer } = useUserData();
   const navigate = useNavigate();
   const [isSelected, setIsSelected] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const { toast } = useToast();
   
   const career = useMemo(() => careerId ? getCareerById(careerId) : null, [careerId]);
   const roadmapItems = useMemo(() => career ? getRoadmapByCareer(career.id) : [], [career]);
@@ -120,10 +123,26 @@ const CareerDetail = () => {
     { name: "Adaptability", relevance: 70, icon: Sparkles },
   ];
   
-  const handleSelectCareer = () => {
-    if(career) {
-        setSelectedCareer(career.id);
-        setIsSelected(true);
+  const handleSelectCareer = async () => {
+    if (isSelecting || !career) return;
+    
+    try {
+      setIsSelecting(true);
+      await setSelectedCareer(career.id);
+      setIsSelected(true);
+      toast({
+        title: "Career selected",
+        description: `${career.title} has been selected as your career path`,
+      });
+      navigate("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to select career. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSelecting(false);
     }
   };
   
@@ -199,10 +218,11 @@ const CareerDetail = () => {
                       {!isSelected ? (
                         <Button 
                           onClick={handleSelectCareer} 
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-base" // Made button larger
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-base"
+                          disabled={isSelecting}
                         >
                           <CheckCircle className="mr-2 h-5 w-5" />
-                          Select This Career Path
+                          {isSelecting ? "Selecting Career Path..." : "Select This Career Path"}
                         </Button>
                       ) : (
                         <>
@@ -214,7 +234,7 @@ const CareerDetail = () => {
                             Career Path Selected
                           </Button>
                           <Button 
-                            onClick={handleGoToDashboard}
+                            onClick={() => navigate("/dashboard")}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-base"
                           >
                             View Your Roadmap on Dashboard
@@ -301,14 +321,8 @@ const CareerDetail = () => {
                 <TabsTrigger value="roadmap" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white py-2 text-sm sm:text-base">
                   <BookOpen className="h-4 w-4 mr-1 sm:mr-2" /> Roadmap
                 </TabsTrigger>
-                <TabsTrigger value="dayInLife" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white py-2 text-sm sm:text-base">
-                  <Sunrise className="h-4 w-4 mr-1 sm:mr-2" /> Day in Life
-                </TabsTrigger>
                 <TabsTrigger value="jobOutlook" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white py-2 text-sm sm:text-base">
                   <BarChart className="h-4 w-4 mr-1 sm:mr-2" /> Job Outlook
-                </TabsTrigger>
-                <TabsTrigger value="responsibilities" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white py-2 text-sm sm:text-base">
-                  <CheckCircle className="h-4 w-4 mr-1 sm:mr-2" /> Responsibilities
                 </TabsTrigger>
               </TabsList>
               

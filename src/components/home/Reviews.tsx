@@ -20,21 +20,24 @@ const reviews: Review[] = [
     name: "Alex Johnson",
     occupation: "Software Developer",
     text: "UpThrive helped me identify my strengths in analytical thinking and guided me toward a career in software development. The roadmap they provided was incredibly helpful!",
-    rating: 5
+    rating: 5,
+    avatar: ""
   },
   {
     id: 2,
     name: "Samantha Lee",
     occupation: "UX Designer",
     text: "I was stuck in a career I didn't enjoy. The skills assessment quiz opened my eyes to my creative potential. Now I'm working as a UX designer and loving it!",
-    rating: 4.5
+    rating: 4.5,
+    avatar: ""
   },
   {
     id: 3,
     name: "Michael Torres",
     occupation: "Data Analyst",
     text: "The personalized roadmap was exactly what I needed. It helped me focus on developing the right skills and securing certifications that made me stand out to employers.",
-    rating: 5
+    rating: 5,
+    avatar: ""
   }
 ];
 

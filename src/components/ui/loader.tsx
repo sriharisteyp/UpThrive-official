@@ -29,17 +29,6 @@ export function Loader({ className, size = "md", ...props }: LoaderProps) {  ret
             size === "sm" ? "h-16" : size === "md" ? "h-24" : "h-32"
           )}
         />
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-          animate={{
-            x: ["-200%", "200%"],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
       </motion.div>
 
       {/* Loading Bar */}

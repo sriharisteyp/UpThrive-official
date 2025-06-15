@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Career, SkillScore } from "@/contexts/UserDataContext";
@@ -7,16 +6,19 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import handleConfirmSelection from "../../pages/Careers"
+import { useToast } from "@/components/ui/use-toast";
 
 type CareerCardProps = {
   career: Career;
   userSkills?: SkillScore;
-  onSelect: (careerId: string) => void;
+  onSelect: (careerId: string) => Promise<void>;
   selected: boolean;
 };
 
 export function CareerCard({ career, userSkills, onSelect, selected }: CareerCardProps) {
+  const { toast } = useToast();
+  const [isSelecting, setIsSelecting] = useState(false);
+
   // Calculate match score if user skills are provided
   const calculateMatchScore = () => {
     if (!userSkills) return null;
@@ -27,17 +29,32 @@ export function CareerCard({ career, userSkills, onSelect, selected }: CareerCar
     categories.forEach(category => {
       const userScore = userSkills[category];
       const requiredScore = career.requiredSkills[category];
-      
-      // Calculate how close the user is to meeting the requirement
-      // A higher user score than required is good, a lower one reduces the match
       totalScore += Math.min(10, (userScore / requiredScore) * 10);
     });
     
-    // Average across all categories, as a percentage
     return Math.round((totalScore / (categories.length * 10)) * 100);
   };
 
-
+  const handleSelect = async () => {
+    if (isSelecting) return;
+    
+    try {
+      setIsSelecting(true);
+      await onSelect(career.id);
+      toast({
+        title: "Career selected",
+        description: `${career.title} has been selected as your career path`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to select career. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSelecting(false);
+    }
+  };
   
   const matchScore = calculateMatchScore();
   
@@ -57,7 +74,6 @@ export function CareerCard({ career, userSkills, onSelect, selected }: CareerCar
       <CardContent>
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-300">Required Skills</h4>
-          
           {Object.entries(career.requiredSkills).map(([skill, level]) => {
             const userSkill = userSkills?.[skill as keyof SkillScore] || 0;
             const meetsRequirement = userSkill >= level;
@@ -87,11 +103,12 @@ export function CareerCard({ career, userSkills, onSelect, selected }: CareerCar
       </CardContent>
       <CardFooter className="flex flex-col space-y-2">
         <Button 
-          onClick={() => onSelect(career.id) }
+          onClick={handleSelect}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           variant={selected ? "secondary" : "default"}
+          disabled={isSelecting}
         >
-          {selected ? "Selected" : "Select This Career"}
+          {isSelecting ? "Selecting..." : (selected ? "Selected" : "Select This Career")}
         </Button>
         
         <Button 

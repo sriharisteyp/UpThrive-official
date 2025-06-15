@@ -47,7 +47,7 @@ const teamMembers: TeamMember[] = [
     name: "Sri Hari S A",
     role: "Founder & CEO",
     bio: "Sri Hari has over 5 years of experience in web development. He founded UpThrive with the mission to help individuals find their perfect career path using data-driven approaches.",
-    avatar: "/avatars/srihari.jpg",
+    avatar: "/srihari.jpg",
     social: {
       github: "https://github.com/srihariSteyp",
       email: "srihari@upthrive.com"
@@ -58,7 +58,7 @@ const teamMembers: TeamMember[] = [
     name: "Muhammed Aslam",
     role: "Co-Founder & CTO",
     bio: "Aslam brings 5 years of full-stack expertise, architecting the robust platform that powers UpThrive's personalized career guidance.",
-    avatar: "/avatars/aslam.jpg",
+    avatar: "/aslam.jpg",
     social: {
       github:"https://github.com/aaslaam",
       email: "muhammedaslamks8@gmail.com"
@@ -69,7 +69,7 @@ const teamMembers: TeamMember[] = [
     name: "Muhammad Sahl",
     role: "Director of Technology & CMO",
     bio: "Sahl leads our tech strategy and marketing, ensuring our career matching algorithms are precise and our message reaches those who need guidance.",
-    avatar: "/avatars/sahl.jpg",
+    avatar: "/sahl.jpg",
     social: {
       github: "https://github.com/pets-19",
       email: "sahl@upthrive.com"
@@ -80,7 +80,7 @@ const teamMembers: TeamMember[] = [
     name: "Fadi Naseel",
     role: "UX Designer",
     bio: "Fadi crafts seamless and engaging user experiences, transforming complex career data into an intuitive and enjoyable journey for our users.",
-    avatar: "/avatars/fadi.jpg",
+    avatar: "/fadi.jpg",
     social: {
       github: "https://github.com",
       email: "fadi@upthrive.com"

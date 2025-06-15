@@ -130,10 +130,9 @@ const PricingPlan = () => {
   };
 
   return (
-    <>
+    <div className=''>
       <ComingSoonOverlay />
-      <Navbar/>
-    </>
+    </div>
   );
 };
 

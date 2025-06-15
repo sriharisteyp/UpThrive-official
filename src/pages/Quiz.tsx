@@ -70,20 +70,33 @@ const Quiz = () => {
     };
 
     try {
-      // Get the normalized scores for each category (0-100 scale)
-      const normalizedScores: Record<string, number> = {};
-      Object.entries(skillTotals).forEach(([category, total]) => {
-        const count = skillCounts[category];
-        // Each answer is scored out of 10, so multiply by 10 to get percentage
-        normalizedScores[category] = Math.round((total / (count * 10)) * 100);
-      });      // Submit the quiz results to the backend
-      await api.post('quiz/submit/', {
-        answers: Object.entries(answers).map(([questionId, selectedOptionScore]) => ({
-          questionId,
-          selectedOptionText: selectedQuestions.find(q => q.id === questionId)?.
-            options.find(o => o.score === selectedOptionScore)?.text || '',
-        }))
+      const token = localStorage.getItem('token');
+      // Submit the quiz results to the backend
+      const response = await api.post('quiz/submit/', {
+        answers: Object.entries(answers).map(([questionId, score]) => {
+          const question = selectedQuestions.find(q => q.id === questionId);
+          return {
+            question_id: questionId,
+            selected_option: score,
+            category: question?.category
+          };
+        })
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+
+      if (response.data.scores) {
+        setQuizResults({
+          analytical: response.data.scores.analytical,
+          technical: response.data.scores.technical,
+          creative: response.data.scores.creative,
+          communication: response.data.scores.communication,
+          leadership: response.data.scores.leadership
+        });
+      }
+      setQuizComplete(true);
 
       toast({
         title: "Quiz submitted successfully",

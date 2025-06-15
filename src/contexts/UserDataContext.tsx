@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { selectCareer, getUserCareers, IUserCareerProgress } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 
 export type SkillScore = {
   analytical: number;
@@ -26,7 +28,7 @@ export type UserData = {
 type UserDataContextType = {
   userData: UserData;
   setQuizResults: (scores: SkillScore) => void;
-  setSelectedCareer: (careerId: string) => void;
+  setSelectedCareer: (careerId: string) => Promise<void>;
   resetUserData: () => void;
   updateRoadmapProgress: (stepTitle: string, status: 'not-started' | 'in-progress' | 'completed') => void;
 };
@@ -43,25 +45,39 @@ export const useUserData = () => {
 
 export const UserDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [userData, setUserData] = useState<UserData>({
     quizCompleted: false,
     roadmapProgress: {}
   });
 
-  // Load user data if available
+  // Load user data and career selection if available
   useEffect(() => {
-    if (user) {
-      const storedData = localStorage.getItem(`careerData_${user.id}`);
-      if (storedData) {
-        setUserData(JSON.parse(storedData));
+    const loadUserData = async () => {
+      if (user) {
+        const storedData = localStorage.getItem(`careerData_${user.id}`);
+        if (storedData) {
+          setUserData(JSON.parse(storedData));
+        }
+        
+        try {
+          const careers = await getUserCareers();
+          if (careers && careers.length > 0) {
+            const latestCareer = careers[careers.length - 1];
+            setUserData(prev => ({
+              ...prev,
+              selectedCareerId: latestCareer.career
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to load user careers:', error);
+        }
       } else {
-        // Initialize empty data for new users
         setUserData({ quizCompleted: false, roadmapProgress: {} });
       }
-    } else {
-      // Reset when logged out
-      setUserData({ quizCompleted: false, roadmapProgress: {} });
-    }
+    };
+
+    loadUserData();
   }, [user]);
 
   // Save data whenever it changes
@@ -79,11 +95,26 @@ export const UserDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }));
   };
 
-  const setSelectedCareer = (careerId: string) => {
-    setUserData((prev) => ({
-      ...prev,
-      selectedCareerId: careerId,
-    }));
+  const setSelectedCareer = async (careerId: string): Promise<void> => {
+    try {
+      await selectCareer(careerId);
+      setUserData(prev => ({
+        ...prev,
+        selectedCareerId: careerId
+      }));
+      toast({
+        title: "Career selected",
+        description: "Your career selection has been saved",
+      });
+    } catch (error) {
+      console.error('Failed to save career selection:', error);
+      toast({
+        title: "Failed to save career selection",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const resetUserData = () => {

@@ -90,80 +90,66 @@ const NewsletterSignup = () => {
   };
 
   return (
-    <div className="mt-8 w-full max-w-md mx-auto">
-      {!isSubmitted ? (
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <h3 className="text-center text-lg font-medium text-primary">Get notified when we launch</h3>
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient"></div>
-            <div className="relative flex items-center bg-black rounded-lg">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="flex-grow px-4 py-2 bg-transparent text-white rounded-l-lg focus:outline-none"
-                required
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary rounded-r-lg text-white font-medium hover:bg-primary/90 transition-colors"
-              >
-                Notify Me
-              </button>
-            </div>
-          </div>
-        </form>
-      ) : (
-        <div className="text-center p-4 bg-primary/10 border border-primary/30 rounded-lg">
-          <BellRing className="h-6 w-6 mx-auto text-primary mb-2" />
-          <p className="text-white">Thanks! We'll notify you when we launch.</p>
-        </div>
-      )}
-    </div>
+   <></>
   );
 };
 
 // Countdown timer
 const CountdownTimer = () => {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 15,
-    hours: 12,
-    minutes: 34,
-    seconds: 56
-  });
+  // Set a fixed launch date in UTC format with consistent timezone handling
+  const LAUNCH_DATE = new Date('2026-05-26T03:30:00.000Z').getTime();
+  
+  const calculateTimeLeft = () => {
+    const now = new Date().getTime();
+    const diff = Math.max(0, LAUNCH_DATE - now);
+    
+    // Calculate months more accurately
+    const currentDate = new Date();
+    const targetDate = new Date(LAUNCH_DATE);
+    
+    let months = (targetDate.getFullYear() - currentDate.getFullYear()) * 12;
+    months += targetDate.getMonth() - currentDate.getMonth();
+    
+    // Adjust months if we haven't reached the target day in the current month
+    if (currentDate.getDate() > targetDate.getDate()) {
+      months--;
+    }
+    
+    // Calculate remaining days after removing full months
+    const millisecondsPerDay = 1000 * 60 * 60 * 24;
+    const remainingDays = Math.floor((diff % (millisecondsPerDay * 30.44)) / millisecondsPerDay);
+    
+    return {
+      months: Math.max(0, months),
+      days: remainingDays,
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((diff % (1000 * 60)) / 1000)
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
 
   useEffect(() => {
+    // Initial calculation
+    setTimeLeft(calculateTimeLeft());
+    
+    // Update every second
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        
-        seconds--;
-        if (seconds < 0) {
-          seconds = 59;
-          minutes--;
-          if (minutes < 0) {
-            minutes = 59;
-            hours--;
-            if (hours < 0) {
-              hours = 23;
-              days--;
-              if (days < 0) {
-                days = hours = minutes = seconds = 0;
-                clearInterval(timer);
-              }
-            }
-          }
-        }
-        
-        return { days, hours, minutes, seconds };
-      });
+      const newTimeLeft = calculateTimeLeft();
+      setTimeLeft(newTimeLeft);
+      
+      // Stop the timer when we reach zero
+      if (Object.values(newTimeLeft).every(v => v === 0)) {
+        clearInterval(timer);
+      }
     }, 1000);
     
     return () => clearInterval(timer);
   }, []);
 
   const timeUnits = [
+    { label: "Months", value: timeLeft.months },
     { label: "Days", value: timeLeft.days },
     { label: "Hours", value: timeLeft.hours },
     { label: "Minutes", value: timeLeft.minutes },
@@ -171,21 +157,31 @@ const CountdownTimer = () => {
   ];
 
   return (
-    <div className="flex justify-center gap-4 mt-8">
-      {timeUnits.map((unit, i) => (
-        <div 
-          key={unit.label} 
-          className="flex flex-col items-center"
-        >
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-lg blur opacity-50"></div>
-            <div className="relative bg-black px-4 py-2 rounded-lg min-w-16 flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{unit.value.toString().padStart(2, '0')}</span>
+    <div className="space-y-8">
+      <div className="flex justify-center gap-4">
+        {timeUnits.map((unit) => (
+          <div 
+            key={unit.label} 
+            className="flex flex-col items-center"
+          >
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-lg blur opacity-50"></div>
+              <div className="relative bg-black px-4 py-2 rounded-lg min-w-16 flex items-center justify-center">
+                <span className="text-2xl font-bold text-white">{unit.value.toString().padStart(2, '0')}</span>
+              </div>
             </div>
+            <span className="text-xs text-white/70 mt-1">{unit.label}</span>
           </div>
-          <span className="text-xs text-white/70 mt-1">{unit.label}</span>
-        </div>
-      ))}
+        ))}
+      </div>
+      <div className="flex justify-center gap-4">
+        <a 
+          href="/"
+          className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-primary to-purple-600 rounded-lg hover:opacity-90 transition-opacity"
+        >
+          Back to Home
+        </a>
+      </div>
     </div>
   );
 };

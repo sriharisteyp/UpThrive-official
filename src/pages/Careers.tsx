@@ -19,23 +19,25 @@ const Careers = () => {
   const { userData, setSelectedCareer } = useUserData();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCareerId, setSelectedCareerId] = useState<string>(userData.selectedCareerId || "");
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]); // Start with empty array - all collapsed
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const navigate = useNavigate();
-  
-  const handleCareerSelect = (careerId: string) => {
-    setSelectedCareerId(careerId);
-  };
-  
-  const handleConfirmSelection = () => {
-    setSelectedCareer(selectedCareerId);
-    navigate("/dashboard");
+
+  // Handle career selection and navigate to dashboard
+  const handleCareerSelect = async (careerId: string) => {
+    try {
+      await setSelectedCareer(careerId);
+      setSelectedCareerId(careerId);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Failed to select career:", error);
+    }
   };
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => 
       prev.includes(category) 
-        ? [] // If clicking on open category, close it
-        : [category] // If clicking on closed category, make it the only open one
+        ? [] 
+        : [category]
     );
   };
   
@@ -130,12 +132,7 @@ const Careers = () => {
               if (filteredCareers.length === 0 && searchTerm) return null;
               
               return (
-                <AnimatedContainer
-                  key={category}
-                  className="space-y-4"
-                  animation="fadeIn"
-                  delay={0.2}
-                >
+                <AnimatedContainer key={category} className="space-y-4">
                   <div 
                     className="flex items-center justify-between cursor-pointer bg-extraLight/20 p-4 rounded-lg hover:bg-extraLight/30 transition-colors"
                     onClick={() => toggleCategory(category)}
@@ -188,23 +185,6 @@ const Careers = () => {
               );
             })}
           </div>
-          
-          {selectedCareerId && (
-            <AnimatedContainer 
-              className="mt-8 flex justify-center"
-              animation="slideUp"
-              delay={0.2}
-            >
-              <AnimatedButton 
-                onClick={handleConfirmSelection} 
-                size="lg"
-                className="flex gap-2 items-center"
-              >
-                <CheckCircle className="h-4 w-4" />
-                Confirm Career Selection
-              </AnimatedButton>
-            </AnimatedContainer>
-          )}
         </div>
       </main>
     </div>
@@ -212,3 +192,4 @@ const Careers = () => {
 };
 
 export default Careers;
+
